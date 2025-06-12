@@ -1,0 +1,100 @@
+version: 2
+
+models:
+  - name: clientes_gold
+    description: >
+      Tabela que adiciona a categorização de clientes com base no total gasto
+      (baixo, médio, alto), derivada da tabela clientes_analitico.
+    columns:
+      - name: id_cliente
+        description: Identificador único do cliente
+        tests:
+          - not_null
+
+      - name: categoria_cliente
+        description: "Faixa de gasto do cliente: baixo (<500), médio (500-1500), alto (>1500)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['baixo', 'médio', 'alto']
+
+  - name: clientes_rfm
+    description: >
+      Tabela com análise RFM (Recência, Frequência e Monetário) para os clientes,
+      útil para segmentação e estratégias de marketing.
+    columns:
+      - name: id_cliente
+        description: Identificador único do cliente
+        tests:
+          - not_null
+
+      - name: ultima_compra
+        description: Data da última compra do cliente
+        tests:
+          - not_null
+
+      - name: frequencia
+        description: Número total de pedidos do cliente
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: monetario
+        description: Valor total gasto pelo cliente
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: recencia
+        description: Dias desde a última compra do cliente
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: pagamentos_resumo
+    description: >
+      Tabela com agregações por forma de pagamento: número total de transações e valor total.
+    columns:
+      - name: metodo_pagamento
+        description: Tipo de pagamento utilizado
+        tests:
+          - not_null
+
+      - name: total_transacoes
+        description: Número de transações por forma de pagamento
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: valor_total
+        description: Soma dos valores pagos por tipo de pagamento
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: desempenho_mensal
+    description: >
+      Desempenho mensal dos clientes: total de pedidos, valor total e ticket médio por mês.
+    columns:
+      - name: mes
+        description: Mês de referência (truncado para mês)
+        tests:
+          - not_null
+
+      - name: total_pedidos
+        description: Total de pedidos feitos pelo cliente no mês
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: valor_total
+        description: Soma dos valores pagos pelo cliente no mês
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: ticket_medio
+        description: Valor médio por pedido no mês
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
